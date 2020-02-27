@@ -1,0 +1,40 @@
+version: '3'
+services:
+    api-nginx:
+        build:
+            context: ./api/docker
+            dockerfile: nginx.docker
+        volumes:
+            - ./api:/var/www/api
+        ports:
+            - "8080:80"
+        depends_on:
+            - api-fpm
+    api-fpm:
+        build:
+            context: ./api/docker
+            dockerfile: php-fpm.docker
+        volumes:
+            - ./api:/var/www/api
+        depends_on:
+            - api-db
+    api-cli:
+        build:
+            context: ./api/docker
+            dockerfile: php-cli.docker
+        volumes:
+            - ./api:/var/www/api
+        depends_on:
+            - api-db
+        working_dir: /var/www/api
+        tty: true
+    api-db:
+        image: postgres:12.1-alpine
+        volumes:
+            - ./api/var/docker/postgres:/var/lib/postgresql/data
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            POSTGRES_DB: app
+        ports:
+            - "54321:5432"
